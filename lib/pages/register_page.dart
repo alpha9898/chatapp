@@ -74,12 +74,17 @@ class RegisterPage extends StatelessWidget {
             ),
             CustomButton(
               ontap: () async {
-                var auth = FirebaseAuth.instance;
-                UserCredential user = await auth.createUserWithEmailAndPassword(
-                  email: email!,
-                  password: password!,
-                );
-                print(user.user!.email);
+                try {
+                  await registerUser();
+                } on FirebaseAuthException catch (e) {
+                  if (e.code == 'weak-password') {
+                    showSnackBar(context, 'The password provided is too weak.');
+                  } else if (e.code == 'email-already-in-use') {
+                    showSnackBar(
+                        context, 'The account already exists for that email.');
+                  }
+                }
+                showSnackBar(context, 'User registered successfully');
               },
               text: "REGISTER",
             ),
@@ -108,6 +113,22 @@ class RegisterPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  Future<void> registerUser() async {
+    UserCredential user =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email!,
+      password: password!,
     );
   }
 }
