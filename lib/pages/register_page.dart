@@ -1,3 +1,5 @@
+import 'package:chat_app/helper/show_snack_bar.dart';
+import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/widgets/custom_button.dart';
 import 'package:chat_app/widgets/custom_text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -70,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(
                   height: 20,
                 ),
-                CustomTextField(
+                CustomFormTextField(
                   onChanged: (data) {
                     email = data;
                   },
@@ -79,7 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(
                   height: 10,
                 ),
-                CustomTextField(
+                CustomFormTextField(
                   onChanged: (data) {
                     password = data;
                   },
@@ -96,6 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       try {
                         await registerUser();
                         showSnackBar(context, 'User registered successfully');
+                        Navigator.pushNamed(context, ChatPage.id);
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'weak-password') {
                           showSnackBar(
@@ -139,14 +142,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
       ),
     );
   }
