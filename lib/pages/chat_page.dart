@@ -1,4 +1,5 @@
 import 'package:chat_app/constants.dart';
+import 'package:chat_app/models/message.dart';
 import 'package:chat_app/widgets/chat_buble.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,11 +11,14 @@ class ChatPage extends StatelessWidget {
   TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<QuerySnapshot>(
-      future: messages.get(),
+    return StreamBuilder<QuerySnapshot>(
+      stream: messages.orderBy(KCreatedAt).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          print(snapshot.data!.docs[0]['massege']);
+          List<Message> messagesList = [];
+          for (int i = 0; i < snapshot.data!.docs.length; i++) {
+            messagesList.add(Message.fromJson(snapshot.data!.docs[i]));
+          }
           return Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: false,
@@ -38,9 +42,13 @@ class ChatPage extends StatelessWidget {
             body: Column(
               children: [
                 Expanded(
-                  child: ListView.builder(itemBuilder: (context, index) {
-                    return ChatBuble();
-                  }),
+                  child: ListView.builder(
+                      itemCount: messagesList.length,
+                      itemBuilder: (context, index) {
+                        return ChatBuble(
+                          message: messagesList[index],
+                        );
+                      }),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -48,7 +56,8 @@ class ChatPage extends StatelessWidget {
                     controller: controller,
                     onSubmitted: (data) {
                       messages.add({
-                        'massege': data,
+                        KMessage: data,
+                        KCreatedAt: DateTime.now(),
                       });
                       controller.clear();
                     },
@@ -79,7 +88,7 @@ class ChatPage extends StatelessWidget {
             ),
           );
         } else {
-          return Text('Loading...');
+          return const Text('Loading...');
         }
       },
     );
